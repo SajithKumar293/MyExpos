@@ -1,0 +1,49 @@
+load --library ../expl/library.lib
+load --int=4 ../spl/spl_progs/int4.xsm
+load --int=6 ../spl/spl_progs/int6.xsm
+load --int=7 ../spl/spl_progs/int7.xsm
+load --int=8 ../spl/spl_progs/int8.xsm
+load --int=9 ../spl/spl_progs/int9.xsm
+load --int=10 ../spl/spl_progs/int10.xsm
+load --int=11 ../spl/spl_progs/int11.xsm
+load --int=13 ../spl/spl_progs/int13.xsm
+load --int=14 ../spl/spl_progs/int14.xsm
+load --int=15 ../spl/spl_progs/int15.xsm
+load --int=disk ../spl/spl_progs/disk_int.xsm
+load --int=timer ../spl/spl_progs/timer.xsm
+load --int=console ../spl/spl_progs/console_int.xsm
+load --exhandler ../spl/spl_progs/exception_handler.xsm
+load --idle ../expl/samples/idle.xsm
+load --os ../spl/spl_progs/startup.xsm
+load --module 0 ../spl/spl_progs/res_manager.xsm
+load --module 1 ../spl/spl_progs/proc_manager.xsm
+load --module 2 ../spl/spl_progs/mem_manager.xsm
+load --module 4 ../spl/spl_progs/dev_manager.xsm
+load --module 5 ../spl/spl_progs/scheduler.xsm
+load --module 7 ../spl/spl_progs/boot.xsm
+rm odd.xsm
+rm even.xsm
+rm pid.xsm
+rm fork.xsm
+rm linked2.xsm
+rm rw.xsm
+rm filec.xsm
+rm filed.xsm
+rm parent.xsm
+rm child.xsm
+rm merge1.xsm
+rm merge2.xsm
+load --init ../expl/samples/shellv2.xsm
+load --exec ../expl/samples/odd.xsm
+load --exec ../expl/samples/even.xsm
+load --exec ../expl/samples/linked2.xsm
+load --exec ../expl/samples/pid.xsm
+load --exec ../expl/samples/rw.xsm
+load --exec ../expl/samples/parent.xsm
+load --exec ../expl/samples/child.xsm
+load --exec ../expl/samples/fork.xsm
+load --exec ../expl/samples/merge1.xsm
+load --exec ../expl/samples/merge2.xsm
+load --exec ../expl/samples/filec.xsm
+load --exec ../expl/samples/filed.xsm
+exit

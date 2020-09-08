@@ -1,0 +1,88 @@
+alias functionNum R1;
+alias page R2;
+if(functionNum==1) then
+	[SYSTEM_STATUS_TABLE+3]= [SYSTEM_STATUS_TABLE+3]+1;
+	while([SYSTEM_STATUS_TABLE+2]==0) do
+	    [PROCESS_TABLE+ [SYSTEM_STATUS_TABLE+1]*16+4]=WAIT_MEM;
+	    call MOD_5;
+	endwhile;
+	[SYSTEM_STATUS_TABLE+2]= [SYSTEM_STATUS_TABLE+2]-1;   
+	[SYSTEM_STATUS_TABLE+3]= [SYSTEM_STATUS_TABLE+3]-1;
+	alias count R1;
+	alias retval R0;
+	count=0;
+	[MEMORY_FREE_LIST+0]=1;
+	while(count<128) do
+	    if([MEMORY_FREE_LIST+count]==0) then
+		retval = count;
+		[MEMORY_FREE_LIST+count]=1;
+		break;
+	    endif;
+	count=count+1;
+	endwhile; 
+	return;
+endif;
+
+if(functionNum==2) then
+	[MEMORY_FREE_LIST+page]=[MEMORY_FREE_LIST+page]-1;
+	if([MEMORY_FREE_LIST+page]==0) then
+	   [SYSTEM_STATUS_TABLE+2]= [SYSTEM_STATUS_TABLE+2]+1;
+	endif; 
+	alias cnt R3;
+	cnt=0;
+	while(cnt<MAX_PROC_NUM) do
+	if([PROCESS_TABLE+cnt*16+4]==WAIT_MEM) then
+	      [PROCESS_TABLE+cnt*16+4]=READY;
+	endif;
+	cnt=cnt+1;
+	endwhile;
+	return;
+endif;
+
+if(functionNum==4) then
+	alias pid R3;
+	alias block R2;
+	[DISK_FREE_LIST + block] = [DISK_FREE_LIST + block]-1;
+	return;
+endif;
+
+if(functionNum==5) then
+	alias block R2;
+	alias counter R4;
+	alias retval R0;
+	counter=0;
+	while(counter<MAX_PROC_NUM) do
+		alias i R5;
+		i=4;
+		while(i<8) do
+			if(([DISK_MAP_TABLE+counter*10+i] == block) && ([PAGE_TABLE_BASE+counter*20+2*i] != -1)) then
+				retval=[PAGE_TABLE_BASE+counter*20+2*i];
+				[MEMORY_FREE_LIST+retval]=[MEMORY_FREE_LIST+retval]+1;
+				breakpoint;
+		            	return;
+			endif;
+			i=i+1;
+		endwhile;
+		counter=counter+1;
+	endwhile;
+
+	multipush(R0,R1,R2,R4);
+	functionNum=1;
+	call MOD_2;
+	functionNum=2;
+	alias page R3;
+	page= retval;
+	alias Block R4;
+	Block=block;
+	alias Page R5;
+	Page =page;
+	alias pid R2;
+	pid=[SYSTEM_STATUS_TABLE+1];
+	multipush(R5);
+	call MOD_4;
+	multipop(R5);
+	multipop(R0,R1,R2,R4);
+	retval = Page;
+	breakpoint;
+	return;
+endif;

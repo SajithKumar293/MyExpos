@@ -1,0 +1,33 @@
+alias functionNum R1;
+alias currentPID R2;
+alias word R3;
+
+if(functionNum==3) then
+     multipush(R0,R1,R2,R3);
+     functionNum=8;
+     call MOD_0;
+     multipop(R0,R1,R2,R3);
+     print(word);
+     multipush(R0,R1,R2,R3);
+     functionNum=9;
+     call MOD_0;
+     multipop(R0,R1,R2,R3);
+     return;
+endif;      
+if(functionNum==4) then   
+     multipush(R0,R1,R2,R3);
+     functionNum=8;
+     call MOD_0;
+     multipop(R0,R1,R2,R3);
+     read;
+     [PROCESS_TABLE+([SYSTEM_STATUS_TABLE+1]*16)+4]=WAIT_TERMINAL;
+     multipush(R0,R1,R2,R3);
+     call MOD_5;
+     multipop(R0,R1,R2,R3);
+     alias phys_addr R4;
+     phys_addr=[PTBR+2*(word)/512]*512+(word%512);
+     [phys_addr]=[PROCESS_TABLE+([SYSTEM_STATUS_TABLE+1]*16)+8];
+     return;
+else
+     return;
+endif;     

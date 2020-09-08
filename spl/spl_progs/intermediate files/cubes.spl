@@ -1,0 +1,8 @@
+alias counter R0;
+alias r R2;
+counter=1;
+while(counter<=5)do
+    r=counter*counter*counter;
+    print r;
+    counter=counter+1;
+endwhile;    

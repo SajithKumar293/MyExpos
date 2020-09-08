@@ -1,0 +1,164 @@
+loadi(65,7);   // init/login
+loadi(66,8);
+
+loadi(61,2);   // Disk free list
+
+loadi(59,3);   // inode + user table
+loadi(60,4);
+
+loadi(63,13);  //library
+loadi(64,14);
+
+loadi(2, 15);  //exception handler
+loadi(3, 16);
+
+loadi(4, 17);  //timer interrupt
+loadi(5, 18);
+
+loadi(6, 19);  //disk interrupt
+loadi(7, 20);
+
+loadi(10,23);  //int 4 /create,delete
+loadi(11,24);
+
+loadi(16,29);  // int 7 /write
+loadi(17,30);
+
+loadi(14,27);  // int 6 /read
+loadi(15,28);
+
+loadi(18,31);  // int 8 /fork
+loadi(19,32);
+
+loadi(20,33);  // int 9 /exec
+loadi(21,34);
+
+loadi(22,35);  // int 10 /exit
+loadi(23,36);
+
+loadi(24,37);  // int 11 /Getpid, Getppid, Wait, Signal
+loadi(25,38);
+
+loadi(28,41);  // int 13 /semget, semrelease
+loadi(29,42);
+
+loadi(30,43);  // int 14 /semlock, semunlock
+loadi(31,44);
+
+loadi(32,45);  // int 15 /shutdown
+loadi(33,46);
+
+loadi(8,21);  // console_int
+loadi(9,22);
+
+loadi(50,63);  // scheduler/ Mod_5
+loadi(51,64);
+
+loadi(40,53);  // res_manager/ Mod_0
+loadi(41,54);
+
+loadi(42,55);  // proc_manager/ Mod_1
+loadi(43,56);
+
+loadi(44,57);  // mem_manager/ Mod_2
+loadi(45,58);
+
+loadi(48,61);  // dev-manager/ Mod_4
+loadi(49,62);
+
+[TERMINAL_STATUS_TABLE+0]=0;
+[DISK_STATUS_TABLE+0]=0;
+
+PTBR = PAGE_TABLE_BASE + 20;
+[PTBR+0]  = 63;         //LIBRARY
+[PTBR+1]  = "0100";
+[PTBR+2]  = 64;
+[PTBR+3]  = "0100";
+[PTBR+4]  = 78;         //heap
+[PTBR+5]  = "0110";
+[PTBR+6]  = 79;
+[PTBR+7]  = "0110";
+[PTBR+8]  = 65;         //code
+[PTBR+9]  = "0100";
+[PTBR+10] = 66;
+[PTBR+11] = "0100";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15]  = "0000";
+[PTBR+16] = 76;        //stack
+[PTBR+17] = "0110";
+[PTBR+18] = 77;
+[PTBR+19] = "0110";
+PTLR = 10;
+
+[PROCESS_TABLE +17] = 1;
+[PROCESS_TABLE +19] = 1;
+[PROCESS_TABLE +20] = CREATED;
+[PROCESS_TABLE +27] = 80;
+[PROCESS_TABLE +28] = 0;
+[PROCESS_TABLE +29] = 8*512;
+[PROCESS_TABLE +30] = PAGE_TABLE_BASE+20;
+[PROCESS_TABLE +31] = 10;
+
+[76*512] = [65 * 512 + 1];    //entry point value from header to the top of user stack
+
+[DISK_MAP_TABLE+10+2]=-1;
+[DISK_MAP_TABLE+10+3]=-1;
+[DISK_MAP_TABLE+10+4]=7;
+[DISK_MAP_TABLE+10+5]=8;
+[DISK_MAP_TABLE+10+6]=-1;
+[DISK_MAP_TABLE+10+7]=-1;
+[DISK_MAP_TABLE+10+8]=-1;
+[DISK_MAP_TABLE+10+9]=-1;
+
+alias counter R14;
+counter = ((PTBR-PAGE_TABLE_BASE)/20)+1;
+while(counter < MAX_PROC_NUM)do
+      [PROCESS_TABLE+(counter*16)+4] = TERMINATED;
+      counter = counter +1;
+endwhile;
+ 
+counter=0;
+while(counter<83) do 
+     [MEMORY_FREE_LIST+counter]=1;
+counter =counter+1;
+endwhile;
+
+
+
+[SYSTEM_STATUS_TABLE+2]=45;
+[SYSTEM_STATUS_TABLE+3]=0;
+[TERMINAL_STATUS_TABLE+0]=0;
+[DISK_STATUS_TABLE+0]=0;
+                                                 
+counter = 494;         
+while(counter < 512) do                                                   
+  [[PROCESS_TABLE+27] * 512 + counter] = -1;                        
+  [[PROCESS_TABLE+27] * 512 + counter + 1] = -1;                       
+  counter = counter + 2;
+endwhile;
+
+counter = 0;
+while(counter<MAX_SEM_COUNT) do
+	[SEMAPHORE_TABLE + 4*counter] = -1;
+	[SEMAPHORE_TABLE + 4*counter + 1] = 0;
+	counter  = counter +1;
+endwhile;
+
+counter=0;
+while(counter < MAX_FILE_NUM) do
+	[FILE_STATUS_TABLE + counter*4 + 0] = -1;
+	[FILE_STATUS_TABLE + counter*4 + 1] = -1;
+	counter = counter+1;
+endwhile;
+
+counter=0;
+while(counter < MAX_BUFFER) do
+	[BUFFER_TABLE + counter*4 + 0] = -1;
+	[BUFFER_TABLE + counter*4 + 1] =  0;
+	[BUFFER_TABLE + counter*4 + 2] = -1;
+	counter = counter+1;
+endwhile;
+return;
+

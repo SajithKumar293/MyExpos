@@ -1,0 +1,95 @@
+alias userSP R0;
+userSP=SP;
+[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+13]=SP;
+SP=[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+11]*512-1;
+
+[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+9]=9;
+
+alias filename R1;
+alias pid R2;
+filename=[[PTBR+2*(userSP-3)/512]*512+(userSP-3)%512];
+pid=[SYSTEM_STATUS_TABLE+1];
+alias i R6;
+i=0;
+while(i<128) do
+	if(([INODE_TABLE+16*i+1]==filename) && ([INODE_TABLE+16*i]==EXEC)) then
+            break;
+	endif;
+	i=i+1;
+endwhile;
+if(i==128) then
+	[[PTBR+2*(userSP-1)/512]*512+(userSP-1)%512]=-1;
+else 
+	alias index R3;
+	index=i;
+	multipush(R0,R1,R2,R3,R6);
+	alias functionNum R1;
+	functionNum=3;
+	pid=[SYSTEM_STATUS_TABLE+1];
+	call MOD_1;
+	multipop(R0,R1,R2,R3,R6);
+
+	alias userareapage R4;
+	userareapage=[PROCESS_TABLE+pid*16+11];
+	[MEMORY_FREE_LIST+userareapage]=[MEMORY_FREE_LIST+userareapage]+1;
+	[SYSTEM_STATUS_TABLE+2]=[SYSTEM_STATUS_TABLE+2]-1;
+	SP=userareapage*512-1;
+	[PROCESS_TABLE+pid*16+4]=RUNNING;
+	[PROCESS_TABLE+pid*16+7]=index;
+	[PAGE_TABLE_BASE+pid*20+0] = 63;
+	[PAGE_TABLE_BASE+pid*20+1] = "0100";
+	[PAGE_TABLE_BASE+pid*20+2] = 64;
+	[PAGE_TABLE_BASE+pid*20+3] = "0100";
+
+	multipush(R0,R1,R2,R3,R4,R6);
+	alias retval R0;
+	functionNum=1;
+	pid=[SYSTEM_STATUS_TABLE+1];
+	call MOD_2;
+	[PAGE_TABLE_BASE+pid*20+16] =retval;
+	[PAGE_TABLE_BASE+pid*20+17] = "0110";
+
+	functionNum=1;
+	pid=[SYSTEM_STATUS_TABLE+1];
+	call MOD_2;
+	[PAGE_TABLE_BASE+pid*20+18] = retval;
+	[PAGE_TABLE_BASE+pid*20+19] = "0110";
+
+	functionNum=1;
+	pid=[SYSTEM_STATUS_TABLE+1];
+	call MOD_2;
+	[PAGE_TABLE_BASE+pid*20+4]=retval;
+	[PAGE_TABLE_BASE+pid*20+5] = "0110";
+
+	functionNum=1;
+	pid=[SYSTEM_STATUS_TABLE+1];
+	call MOD_2;
+	[PAGE_TABLE_BASE+pid*20+6] =retval;
+	[PAGE_TABLE_BASE+pid*20+7] = "0110";
+	multipop(R0,R1,R2,R3,R4,R6);
+
+	i=0;
+	alias k R5;
+	k=0;
+	while(i<4) do 
+		if([INODE_TABLE+index*16+8+i]>0) then
+		        multipush(R0,R1,R2,R3,R4,R5,R6); 
+			alias functionNum R1;
+			alias retval R0;
+			functionNum=1;
+			pid = [SYSTEM_STATUS_TABLE+1];
+			call MOD_2;
+			[PAGE_TABLE_BASE+pid*20+8+2*k] =retval;
+			[PAGE_TABLE_BASE+pid*20+8+2*k+1] = "0100";
+			loadi(retval,[INODE_TABLE+index*16+8+i]);
+			multipop(R0,R1,R2,R3,R4,R5,R6);
+			k=k+1;		
+		endif;
+	i=i+1;
+	endwhile; 
+	[[PAGE_TABLE_BASE+pid*20+16]*512]=[[PAGE_TABLE_BASE+pid*20+8]*512+1];      
+
+endif;
+SP =8*512 ;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+ireturn;

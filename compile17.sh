@@ -1,0 +1,41 @@
+#! /bin/sh
+cd spl
+./spl spl_progs/startup.spl
+./spl spl_progs/timer.spl
+./spl spl_progs/boot.spl
+./spl spl_progs/int4.spl
+./spl spl_progs/int7.spl
+./spl spl_progs/int6.spl
+./spl spl_progs/int8.spl
+./spl spl_progs/int9.spl
+./spl spl_progs/int10.spl
+./spl spl_progs/int11.spl
+./spl spl_progs/int13.spl
+./spl spl_progs/int14.spl
+./spl spl_progs/int15.spl
+./spl spl_progs/exception_handler.spl
+./spl spl_progs/scheduler.spl
+./spl spl_progs/disk_int.spl
+./spl spl_progs/res_manager.spl
+./spl spl_progs/dev_manager.spl
+./spl spl_progs/mem_manager.spl
+./spl spl_progs/proc_manager.spl
+./spl spl_progs/console_int.spl
+
+cd ../expl
+./expl samples/even.expl
+./expl samples/odd.expl
+./expl samples/rw.expl
+./expl samples/parent.expl
+./expl samples/child.expl
+./expl samples/linked2.expl
+./expl samples/shellv2.expl
+./expl samples/pid.expl
+./expl samples/merge1.expl
+./expl samples/merge2.expl
+./expl samples/fork.expl
+./expl samples/filec.expl
+./expl samples/filed.expl
+
+cd ../xfs-interface
+./xfs-interface

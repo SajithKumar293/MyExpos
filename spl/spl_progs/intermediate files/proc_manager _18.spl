@@ -1,0 +1,45 @@
+alias functionNum R1;
+alias pid R2;
+alias userarea R3;
+
+if(functionNum==2) then
+	userarea=[PROCESS_TABLE+pid*16+11];
+	multipush(R1,R2,R3);
+	functionNum=2;
+	alias page R2;
+	page=userarea;
+	call MOD_2;
+	multipop(R1,R2,R3);
+	return;
+endif;
+
+if(functionNum==3) then
+	multipush(R1,R2,R3);
+	functionNum = 4;
+	call MOD_1;
+	functionNum=2;
+	call MOD_1;
+	multipop(R1,R2,R3);
+	[PROCESS_TABLE+pid*16+4]=TERMINATED;
+	return;
+endif;
+if(functionNum==4) then 
+	[PAGE_TABLE_BASE+pid*20+0]=-1;
+	[PAGE_TABLE_BASE+pid*20+1]="0000";
+	[PAGE_TABLE_BASE+pid*20+2]=-1;
+	[PAGE_TABLE_BASE+pid*20+3]="0000";
+	alias count R0;
+	count=2;
+	while(count<10) do
+	    if([PAGE_TABLE_BASE+pid*20+2*count]==-1) then 
+		 multipush(R0,R1,R2,R3);
+		 alias page1 R2;
+		 page1 = [PAGE_TABLE_BASE+pid*20+2*count];
+		 functionNum = 2;
+		 call MOD_2;
+		 multipop(R0,R1,R2,R3);
+	    endif;
+	    count=count+1;
+	endwhile;
+	return;
+endif;

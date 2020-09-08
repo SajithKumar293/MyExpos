@@ -1,0 +1,15 @@
+int main()
+{
+decl
+    int temp,num,even;
+enddecl
+begin
+    num=0;
+    while ( num < 50 ) do
+         even = 2*num+2;
+         temp = exposcall ( "Write" , -2, even);
+         num = num + 1;
+    endwhile;
+    return 0;
+end
+}

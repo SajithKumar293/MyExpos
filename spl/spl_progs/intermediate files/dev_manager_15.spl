@@ -1,0 +1,21 @@
+alias functionNum R1;
+alias currentPID R2;
+alias word R3;
+alias ret_val R5;
+if(functionNum==3) then
+     multipush(R0,R1,R2,R3);
+     functionNum=8;
+     call MOD_0;
+     multipop(R0,R1,R2,R3);
+     print(word);
+     multipush(R0,R1,R2,R3);
+     functionNum=9;
+     call MOD_0;
+     ret_val=R0;
+     multipop(R0,R1,R2,R3);
+     return;
+else if(functionNum==4) then   
+     alias hi R6;  
+else
+     return;
+endif;     

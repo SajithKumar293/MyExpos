@@ -1,0 +1,10 @@
+alias counter R0;
+alias r R2;
+r=0;
+counter=1;
+while(counter<=20)do
+     r=r+(counter*counter);
+     counter=counter+1;
+endwhile;
+print r;
+

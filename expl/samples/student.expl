@@ -1,0 +1,25 @@
+type
+Student
+{
+    str name;
+    int marks;
+}
+endtype
+
+int main()
+{
+decl
+    int x,y;
+    Student object;
+    int val;
+enddecl
+begin
+    val = initialize();
+    object = alloc();
+    object.name = "john";
+    object.marks = 89;
+    x = exposcall ( "Write" , -2, object.name);
+    y = exposcall ( "Write" , -2, object.marks);
+    return 0;
+end
+}

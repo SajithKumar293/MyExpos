@@ -1,0 +1,112 @@
+alias functionNum R1;
+alias pid R2;
+alias userarea R3;
+
+//free_user_area_page
+if(functionNum==2) then
+	userarea=[PROCESS_TABLE+pid*16+11];
+	alias counter R4;
+	counter=0;
+	while(counter<8) do
+		if([userarea*512+496+counter*2]==SEMAPHORE && [userarea*512+496+counter*2+1]!=-1) then
+			multipush(R1,R2,R3,R4);
+			R1 = 7;
+			R2 = [userarea*512+496+counter*2 + 1];
+			R3 = pid;
+			call RESOURCE_MANAGER;
+			multipop(R1,R2,R3,R4);
+		endif;
+		counter = counter + 1;
+	endwhile;
+	multipush(R1,R2,R3);
+	functionNum=2;
+	alias page R2;
+	page=userarea;
+	call MOD_2;
+	multipop(R1,R2,R3);
+	return;
+endif;
+
+//exit_process
+if(functionNum==3) then
+   if([PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+9]!=9) then
+	alias counter R4;
+	counter=0;
+	while(counter<16) do
+	if(([PROCESS_TABLE+counter*16+4]==WAIT_PROCESS) && ([PROCESS_TABLE+counter*16+5]==pid)) then
+		[PROCESS_TABLE+counter*16+4]=READY;
+	endif;
+	if([PROCESS_TABLE+counter*16+2]==pid) then
+		[PROCESS_TABLE+counter*16+2]=-1;
+	endif;
+	counter=counter+1;
+	endwhile;
+   endif;
+
+	multipush(R1,R2,R3);
+	functionNum = 4;
+	call MOD_1;
+	multipop(R1,R2,R3);
+	multipush(R1,R2,R3);
+	functionNum=2;
+	call MOD_1;
+	multipop(R1,R2,R3);
+	[PROCESS_TABLE+pid*16+4]=TERMINATED;
+	return;
+endif;
+
+//free_page_table
+if(functionNum==4) then 
+	[PAGE_TABLE_BASE+pid*20+0]=-1;
+	[PAGE_TABLE_BASE+pid*20+1]="0000";
+	[PAGE_TABLE_BASE+pid*20+2]=-1;
+	[PAGE_TABLE_BASE+pid*20+3]="0000";
+	alias count R0;
+	count=2;
+	while(count<10) do
+	    if([PAGE_TABLE_BASE+pid*20+2*count]!=-1) then 
+		 multipush(R0,R1,R2,R3);
+		 alias page1 R2;
+		 page1 = [PAGE_TABLE_BASE+pid*20+2*count];
+		 functionNum = 2;
+		 call MOD_2;
+		 multipop(R0,R1,R2,R3);
+	    endif;
+	    count=count+1;
+	endwhile;
+	count=2;
+	while(count<10) do
+		if((count<4||count>7)&&([DISK_MAP_TABLE+pid*10+count]>0)) then
+			multipush(R0,R1,R2,R3);
+			functionNum=4;
+			alias PID R3;
+			alias block R2;
+			PID=pid;
+			block = [DISK_MAP_TABLE+pid*10+count];
+			call MOD_2;
+			multipop(R0,R1,R2,R3);
+		endif;
+		[DISK_MAP_TABLE+pid*10+count]=-1;
+		count=count+1;
+	endwhile;
+	return;
+endif;
+
+//get_pcb_entry
+if(functionNum==1) then
+	alias counter R1;
+	counter=1;
+	while(counter<16) do
+	   if([PROCESS_TABLE+counter*16 +4]==TERMINATED) then
+		R0 = counter;
+		[PROCESS_TABLE+ counter*16+1]=counter;
+		[PROCESS_TABLE+ counter*16+4]=ALLOCATED;
+		[PROCESS_TABLE+ counter*16+14]=PAGE_TABLE_BASE+counter*20;
+		[PROCESS_TABLE+ counter*16+15]=10;
+		return;
+	   endif;
+	counter=counter+1;
+	endwhile;
+	R0=-1;
+	return;
+endif; 

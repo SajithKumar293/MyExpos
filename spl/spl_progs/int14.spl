@@ -1,0 +1,77 @@
+alias userSP R1;
+alias pid R2;
+alias syscall R3;
+alias userareapage R4;
+
+userSP = SP;
+pid = [SYSTEM_STATUS_TABLE+1];
+syscall = [[PTBR+2*(userSP-5)/512]*512 + (userSP-5)%512];
+userareapage = [PROCESS_TABLE + pid*16 + 11];
+[PROCESS_TABLE + pid*16 + 13] = SP;
+SP = userareapage*512 - 1;
+
+[PROCESS_TABLE + pid*16 + 9] = syscall;
+
+//SemLock
+if(syscall == 19) then
+	alias semDesc R5;
+	alias semid R6;
+	semDesc = [[PTBR+2*(userSP-4)/512]*512 + (userSP-4)%512];
+	if(semDesc<0||semDesc>7||[userareapage*512 + 496 + 2*semDesc] != 1) then
+		[PROCESS_TABLE + pid*16 + 9] = 0;
+		[[PTBR+2*(userSP-1)/512]*512 + (userSP-1)%512] = -1;
+		SP = userSP;
+		ireturn;
+	endif;
+
+	semid = [userareapage*512 + 496 + 2*semDesc + 1];
+	while([SEMAPHORE_TABLE + 4*semid] != -1 && [SEMAPHORE_TABLE + 4*semid] != pid) do
+		[PROCESS_TABLE + pid*16 + 4] = WAIT_SEMAPHORE;
+		[PROCESS_TABLE + pid*16 + 5] = semid;
+		multipush(R1,R2,R3,R4,R5,R6);
+		call MOD_5;
+		multipop(R1,R2,R3,R4,R5,R6);
+	endwhile;
+
+	[SEMAPHORE_TABLE + 4*semid] = pid;
+	[PROCESS_TABLE + pid*16 + 9] = 0;
+	[[PTBR+2*(userSP-1)/512]*512 + (userSP-1)%512] = 0;
+	SP = userSP;
+	ireturn;
+endif;
+
+//SemUnlock
+if(syscall == 20) then
+	alias semDesc R5;
+	alias semid R6;
+	semDesc = [[PTBR+2*(userSP-4)/512]*512 + (userSP-4)%512];
+	if(semDesc<0||semDesc>7||[userareapage*512 + 496 + 2*semDesc] != 1) then
+		[PROCESS_TABLE + pid*16 + 9] = 0;
+		[[PTBR+2*(userSP-1)/512]*512 + (userSP-1)%512] = -1;
+		SP = userSP;
+		ireturn;
+	endif;
+
+	semid = [userareapage*512 + 496 + 2*semDesc + 1];
+	if([SEMAPHORE_TABLE + 4*semid] != -1) then 
+		if([SEMAPHORE_TABLE + 4*semid] != pid) then 
+			[PROCESS_TABLE + pid*16 + 9] = 0;
+			[[PTBR+2*(userSP-1)/512]*512 + (userSP-1)%512] = -2;
+			SP = userSP;
+			ireturn;
+		endif;
+		[SEMAPHORE_TABLE + 4*semid] = -1;
+		alias counter R7;
+		counter=0;
+		while(counter<MAX_PROC_NUM) do
+			if([PROCESS_TABLE + counter*16 + 4] == WAIT_SEMAPHORE && [PROCESS_TABLE + 16 * counter + 5] == semid) then
+				[PROCESS_TABLE + counter*16 + 4] = READY;
+			endif;
+			counter=counter+1;
+		endwhile;
+	endif;
+	[PROCESS_TABLE + pid*16 + 9] = 0;
+	[[PTBR+2*(userSP-1)/512]*512 + (userSP-1)%512] = 0;
+	SP = userSP;
+	ireturn;
+endif;

@@ -1,0 +1,32 @@
+[PROCESS_TABLE+([SYSTEM_STATUS_TABLE+1]*16)+9]=7;
+
+alias userSP R0;
+userSP=SP;
+[PROCESS_TABLE+([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE+([SYSTEM_STATUS_TABLE+1]*16)+11]*512-1;
+alias fileDescPhysicalAddr R1;
+fileDescPhysicalAddr = ([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + ((userSP - 4) % 512);
+alias fileDescriptor R2;
+fileDescriptor=[fileDescPhysicalAddr];
+if (fileDescriptor != -1) then
+	 alias physicalAddrRetVal R3;
+	 physicalAddrRetVal = ([PTBR + 2 * ((userSP - 1) / 512)] * 512) + ((userSP - 1) % 512);
+	 [physicalAddrRetVal] = -1;
+endif;	 
+if (fileDescriptor == -1) then
+    multipush(R0,R1,R2,R3);
+    alias terminal_read R1;
+    alias PID R2;
+    alias word_address  R3;
+    terminal_read=4;
+    PID = [SYSTEM_STATUS_TABLE + 1];
+    word_address =  [[PTBR + 2 * (userSP - 3)/ 512] * 512 + (userSP - 3) % 512];
+    call MOD_4;
+    multipop(R0,R1,R2,R3);
+    alias physicalAddrRetVal R4;
+	physicalAddrRetVal = ([PTBR + 2 * (userSP - 1)/ 512] * 512) + ((userSP - 1) % 512);
+	[physicalAddrRetVal] = 0;
+endif;
+SP = userSP;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+ireturn;
